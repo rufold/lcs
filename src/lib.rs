@@ -29,7 +29,7 @@ impl Cell {
 
 #[must_use]
 pub fn lcs(a: &str, b: &str) -> String {
-    let mut row_chars: Vec<char> = a.chars().collect();
+    let row_chars: Vec<char> = a.chars().collect();
     let column_chars: Vec<char> = b.chars().collect();
 
     let mut table: Vec<Vec<Cell>> =
@@ -72,8 +72,15 @@ pub fn lcs(a: &str, b: &str) -> String {
         }
     }
 
+    visualize(&column_chars, row_chars, &table);
+    
+    lcs.iter().rev().collect::<String>()
+
+}
+
+fn visualize(column_chars: &[char], mut row_chars: Vec<char>, table: &[Vec<Cell>]) {
     print!("        ");
-    for l in &column_chars {
+    for l in column_chars {
         print!("{}   ", l);
     }
     println!();
@@ -96,9 +103,6 @@ pub fn lcs(a: &str, b: &str) -> String {
         }
         println!();
     }
-    
-    lcs.iter().rev().collect::<String>()
-    
 }
 
 #[cfg(test)]
