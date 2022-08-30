@@ -1,0 +1,7 @@
+[package]
+edition = "2021"
+name = "lcs"
+version = "0.1.0"
+
+[dependencies]
+colour = "0.6.0"
