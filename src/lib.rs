@@ -1,5 +1,7 @@
 #![deny(clippy::pedantic)]
+#![allow(dead_code)]
 use colour::green;
+use rand::{thread_rng, Rng};
 use std::cmp;
 
 #[derive(Clone, Copy, PartialEq)]
@@ -28,7 +30,7 @@ impl Cell {
 }
 
 #[must_use]
-pub fn lcs(a: &str, b: &str) -> String {
+pub fn lcs(a: &str, b: &str, vis: bool) -> String {
     let row_chars: Vec<char> = a.chars().collect();
     let column_chars: Vec<char> = b.chars().collect();
 
@@ -71,20 +73,54 @@ pub fn lcs(a: &str, b: &str) -> String {
             Arrow::Empty => (),
         }
     }
+    if vis {
+        visualize(&column_chars, row_chars, &table);
+    }
 
-    visualize(&column_chars, row_chars, &table);
-    
     lcs.iter().rev().collect::<String>()
+}
 
+fn lcs_length(a: &str, b: &str) -> u32 {
+    let mut lens = vec![0; b.len() + 1];
+    for ac in a.chars() {
+        let mut prev = 0;
+        for (i, bc) in b.chars().enumerate() {
+            let temp = lens[i + 1];
+            lens[i + 1] = if ac == bc {
+                prev + 1
+            } else {
+                lens[i].max(lens[i + 1])
+            };
+            prev = temp;
+        }
+    }
+    lens[b.len()]
+}
+
+fn chavatal_sankoff() {
+    let ks = vec![2, 4, 8, 16];
+    let ns = vec![100, 500, 1000];
+
+    for k in ks {
+        for n in &ns {
+            let s1 = random_string(*n, k);
+            let s2 = random_string(*n, k);
+            let length = lcs_length(&s1, &s2);
+            println!("n: {n}, k: {k}");
+            println!("dlugosc nwp: {length}");
+            println!("dlugosc / n: {}", f64::from(length) / f64::from(*n));
+            println!("--------------");
+        }
+    }
 }
 
 fn visualize(column_chars: &[char], mut row_chars: Vec<char>, table: &[Vec<Cell>]) {
     print!("        ");
     for l in column_chars {
-        print!("{}   ", l);
+        print!("{l}   ");
     }
     println!();
-    
+
     row_chars.insert(0, ' ');
     for (i, v) in table.iter().enumerate() {
         print!("{} ", row_chars[i]);
@@ -105,16 +141,43 @@ fn visualize(column_chars: &[char], mut row_chars: Vec<char>, table: &[Vec<Cell>
     }
 }
 
+fn random_string(n: u32, k: u8) -> String {
+    let mut rng = thread_rng();
+    let string: String = (0..n)
+        .map(|_| rng.gen_range(65..=(65 + k)) as char)
+        .collect();
+    string
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
     #[test]
-    fn it_works() {
-        assert_eq!(lcs("gac", "agcat"), "ga");
+    fn chavatal_sankoff_test() {
+        chavatal_sankoff();
     }
 
     #[test]
-    fn nawigator() {
-        assert_eq!(lcs("nawigator", "nowator"), "nwator");
+    fn it_works() {
+        assert_eq!(lcs("nawigator", "nowator", true), "nwator");
+    }
+
+    #[test]
+    fn test_five() {
+        assert_eq!(lcs("algorytm", "program", false), "grm");
+        assert_eq!(lcs("longest", "common", false), "on");
+        assert_eq!(lcs("bacbacba", "abbaac", false), "baac");
+        assert_eq!(lcs("rust", "crust", false), "rust");
+        assert_eq!(lcs("calkowita", "zmiennoprzecinkowa", false), "ckowa");
+    }
+
+    #[test]
+    fn test_length() {
+        assert_eq!(lcs_length("algorytm", "program"), 3);
+        assert_eq!(lcs_length("longest", "common"), 2);
+        assert_eq!(lcs_length("bacbacba", "abbaac"), 4);
+        assert_eq!(lcs_length("rust", "crust"), 4);
+        assert_eq!(lcs_length("calkowita", "zmiennoprzecinkowa"), 5);
     }
 }

@@ -24,11 +24,11 @@ fn main() {
     string1 = string1.trim().to_string();
     string2 = string2.trim().to_string();
 
-    let lcs = lcs(&string1, &string2);
+    let lcs = lcs(&string1, &string2, true);
 
     if lcs.is_empty() {
         println!("no common subsequences");
     } else {
-        println!("longest common subsequence: {:?}", lcs);
+        println!("longest common subsequence: {lcs:?}");
     }
 }
